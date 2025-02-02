@@ -1,0 +1,6 @@
+{
+  "header": {
+    "mode": "enforce",
+    "reportEndpoint": "https://cspconsole-com-9df8623c.api.cspconsole.com/v1/reports"
+  }
+}
