@@ -1,5 +1,5 @@
-import {getCspValueFromMetaTag, updateCspMetaTagInDocument} from "../MetaTagService";
-import { JSDOM} from "jsdom";
+import { getCspValueFromMetaTag, updateCspMetaTagInDocument } from "../MetaTagService";
+import { JSDOM } from "jsdom";
 
 describe('MetaTagService',  function () {
     describe('getCspValueFromMetaTag', function () {
@@ -13,9 +13,9 @@ describe('MetaTagService',  function () {
                         <p>dummy content</p>
                     </body>
                 </html>`);
-
+            
             const result = getCspValueFromMetaTag(html.window.document);
-
+            
             expect(result).toBe(undefined);
         });
 
