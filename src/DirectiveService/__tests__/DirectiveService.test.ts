@@ -11,10 +11,11 @@ describe('DirectiveService', () => {
         });
 
         it('returns directives when type is set in CSP header value', () => {
-            const result = getAllCspDirectivesByType({ cspHeader: CSP_HEADER, type: 'script-src' });
+            const result = getAllCspDirectivesByType({ cspHeader: CSP_HEADER, type: 'script-src', selfReplacementUrl: 'https://cspconsole.com' });
 
             expect(result).toStrictEqual([
-                'self',
+                'https://cspconsole.com',
+                '/',
                 'unsafe-inline',
                 'https://apis.google.com',
                 'https://cdn.cspconsole.com',

@@ -10,7 +10,12 @@ function extractCSPDirective(cspHeader: string, directive: string): string | nul
 
     return null;
 }
-export function getAllCspDirectivesByType({ cspHeader, type }: {cspHeader: string; type: string}): string[] {
+export function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }: {cspHeader: string; type: string; selfReplacementUrl?: string;}): string[] {
+    const selfReplacements = [
+        selfReplacementUrl ?? location.protocol + '//' + location.host,
+        '/'
+    ];
+
     if (cspHeader.indexOf(type) < 0) {
         return [];
     }
@@ -21,5 +26,7 @@ export function getAllCspDirectivesByType({ cspHeader, type }: {cspHeader: strin
         return [];
     }
 
-    return cspDirective.split(' ').filter(val => val.length > 0).map(val => val.replace(/'/g, ""));;
+    const cspDirectives = cspDirective.split(' ').filter(val => val.length > 0).map(val => val.replace(/'/g, ""));
+
+    return cspDirectives.flatMap(value => value === 'self' ? selfReplacements : value);
 }
