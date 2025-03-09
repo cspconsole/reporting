@@ -1,7 +1,8 @@
+import CryptoJS from 'crypto-js';
 export interface MD5hasher {
     (content: string): string;
 }
 
 export const getMD5hash: MD5hasher = (content: string)=> {
-    return content;
+    return CryptoJS.MD5(content).toString();
 };
