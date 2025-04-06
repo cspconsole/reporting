@@ -3,11 +3,11 @@
     "target": "ES2020",
     "module": "ES2020",
     "declaration": true,
-    "outDir": "./dist",
+    "outDir": "./src/demo/dist",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "src/cspconsole_inspiration.ts"]
 }

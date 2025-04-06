@@ -37,3 +37,5 @@ Thumbs.db
 
 # Vite or other bundler output (if used)
 vite/
+
+src/demo/dist

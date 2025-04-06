@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/demo/dist/index.umd.js",
+  "module": "src/demo/dist/index.esm.js",
+  "types": "src/demo/dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c",
     "test": "jest",
     "lint": "eslint src"
   },
@@ -27,6 +28,8 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^26.0.0",
+    "rollup": "^4.39.0",
+    "rollup-plugin-typescript2": "^0.36.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.3",
     "util": "^0.12.5"

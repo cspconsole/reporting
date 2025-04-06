@@ -25,6 +25,7 @@ export default [
             'object-curly-spacing': ['error', 'always'],
             'no-multiple-empty-lines': ["error", { max: 1, maxEOF: 1, maxBOF: 0 }],
             "semi": ["error", "always"],
+            "object-curly-newline": ["error", { "multiline": true, "consistent": true }]
         },
     },
 ];
