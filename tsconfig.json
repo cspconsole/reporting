@@ -6,7 +6,8 @@
     "outDir": "./src/demo/dist",
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "src/cspconsole_inspiration.ts"]

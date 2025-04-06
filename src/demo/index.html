@@ -3,26 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
     <title>CSP Console Test</title>
     <script src="/dist/index.umd.js"></script>
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(() => {
-                    console.log('Service Worker registered');
-                }).catch((error) => {
-                console.log('Service Worker registration failed:', error);
-            });
-        }
+        cspConsoleReporting('https://cspconsole-com-9df8623c.api.cspconsole.com/v1/reports');
 
-        function removeSrc() {
-            const el = document.getElementById("test-1");
-            console.log(el);
-            if (el && el.src) {
-                el.setAttribute("data-src", el.src);
-                el.removeAttribute("src");
-            }
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            // Create and load the Toastr CSS file
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css';
+            document.head.appendChild(link);
+
+            // Create and load the Toastr JavaScript file
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js';
+            script.type = 'text/javascript';
+            document.head.appendChild(script);
+
+            // After the script is loaded, you can use Toastr
+            script.onload = function () {
+                console.log('Toastr script loaded');
+                // Example usage: Display a success message
+                toastr.success('Toastr is working!');
+            };
+        });
+        // service worker registration
+        // if ('serviceWorker' in navigator) {
+        //     navigator.serviceWorker.register('./service-worker.js')
+        //         .then(() => {
+        //             console.log('Service Worker registered');
+        //         }).catch((error) => {
+        //         console.log('Service Worker registration failed:', error);
+        //     });
+        // }
+        //
     </script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.css" />
