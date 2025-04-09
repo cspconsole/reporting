@@ -1,4 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
+import copy from 'rollup-plugin-copy';
 
 export default [
     {
@@ -14,6 +15,11 @@ export default [
         context: 'window',
         plugins: [
             typescript({ tsconfig: './tsconfig.json' }), // Use TypeScript config
+            copy({
+                targets: [
+                    { src: 'src/service-worker.js', dest: 'dist' } // Copy service-worker.js to dist folder
+                ],
+            }),
         ],
     },
     {
@@ -27,6 +33,11 @@ export default [
         ],
         plugins: [
             typescript({ tsconfig: './tsconfig.json' }), // Use TypeScript config
+            copy({
+                targets: [
+                    { src: 'src/service-worker.js', dest: 'dist' } // Copy service-worker.js to dist folder
+                ],
+            }),
         ],
     }
 ];
