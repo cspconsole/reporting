@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
   "type": "module",
-  "main": "src/demo/dist/index.umd.js",
-  "module": "src/demo/dist/index.esm.js",
-  "types": "src/demo/dist/index.d.ts",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c",
     "test": "jest",
