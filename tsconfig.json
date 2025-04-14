@@ -3,12 +3,13 @@
     "target": "ES2020",
     "module": "ES2020",
     "declaration": true,
-    "declarationDir": "./dist/types", // Where to store .d.ts files
+    "declarationDir": "./dist/types",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "sourceMap": true
+    "sourceMap": true,
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "src/cspconsole_inspiration.ts"]

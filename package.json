@@ -8,7 +8,7 @@
   "types": "dist/types/indexEsm.d.ts",
   "umdTypes": "dist/types/indexUmd.d.ts",
   "scripts": {
-    "build": "rollup -c",
+    "build": "npx rollup -c && npx tsc --declaration --emitDeclarationOnly",
     "test": "jest",
     "lint": "eslint src"
   },
