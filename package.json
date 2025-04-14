@@ -5,7 +5,8 @@
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/types/indexEsm.d.ts",
+  "umdTypes": "dist/types/indexUmd.d.ts",
   "scripts": {
     "build": "rollup -c",
     "test": "jest",
