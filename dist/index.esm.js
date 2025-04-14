@@ -42,8 +42,8 @@ function cspWebGuard() {
 }
 
 function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
+    initConfig({ policies, mode, reportUri });
     if (shouldUseEnforceMode()) {
-        initConfig({ policies, mode, reportUri });
         cspWebGuard();
         onGuardInit?.();
         return;
@@ -52,7 +52,6 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
             .then(() => {
-            initConfig({ policies, mode, reportUri });
             cspWebGuard();
             onGuardInit?.();
         }).catch((error) => {
