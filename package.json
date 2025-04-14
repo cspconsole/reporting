@@ -43,5 +43,6 @@
   ],
   "dependencies": {
     "crypto-js": "^4.2.0"
-  }
+  },
+  "postinstall": "cp ./dist/service-worker.js ./public/service-worker.js"
 }
