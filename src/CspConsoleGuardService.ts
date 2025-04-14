@@ -7,8 +7,9 @@ type GuardConfig = Config & {
 };
 
 export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: GuardConfig): void {
+    initConfig({ policies, mode, reportUri });
+
     if (shouldUseEnforceMode()) {
-        initConfig({ policies, mode, reportUri });
         cspWebGuard();
         onGuardInit?.();
         return;
@@ -18,7 +19,6 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: G
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
             .then(() => {
-                initConfig({ policies, mode, reportUri });
                 cspWebGuard();
                 onGuardInit?.();
             }).catch((error) => {
