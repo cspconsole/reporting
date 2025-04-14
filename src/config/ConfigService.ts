@@ -1,5 +1,5 @@
 export type Config = {
-    policies: { pathRegex: string; values: string }[];
+    policies: { pathRegex: string; value: string }[];
     reportUri: string;
     mode: 'enforce' | 'reportOnly';
     debug?: boolean;

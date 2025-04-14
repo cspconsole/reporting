@@ -61,9 +61,9 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
 }
 
 function getCspConfigByRoute(routes, currentUrl) {
-    for (const { pathRegex, values } of routes) {
+    for (const { pathRegex, value } of routes) {
         if (new RegExp(pathRegex).test(currentUrl)) {
-            return values;
+            return value;
         }
     }
     return undefined;
