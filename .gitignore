@@ -18,7 +18,7 @@ Thumbs.db
 /.vscode/
 
 # TypeScript declaration files (if generated manually)
-*.d.ts
+#*.d.ts
 
 # Miscellaneous
 /.eslintcache
@@ -37,5 +37,3 @@ Thumbs.db
 
 # Vite or other bundler output (if used)
 vite/
-
-src/demo/dist
