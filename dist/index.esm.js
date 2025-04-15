@@ -28,11 +28,8 @@ function shouldUseReportOnlyMode() {
 
 function cspWebGuard() {
     if (shouldUseEnforceMode()) {
-        // THIS DOES NOT MAKE ANY SENSE...when this event occurs, browser already sent the report.
-        // The policy violation is not cancellable, is purely informative
         window.addEventListener('securitypolicyviolation', function (event) {
-            console.log('-----------------');
-            console.log('violation happened');
+            console.log('Violation happened');
             console.log(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
             console.log('-----------------');
             // reportViolation(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
@@ -48,14 +45,18 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
         onGuardInit?.();
         return;
     }
-    // THIS IS QUESTIONABLE WHERE TO GO WITH IT...
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js')
+        navigator.serviceWorker.register('/service-worker.js')
             .then(() => {
-            cspWebGuard();
+            // cspWebGuard();
             onGuardInit?.();
         }).catch((error) => {
             console.log('Service Worker registration failed:', error);
+        });
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data?.type === 'ASSET_FETCHED') {
+                console.log('[SW Asset Fetched]', event.data);
+            }
         });
     }
 }
