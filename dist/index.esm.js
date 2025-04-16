@@ -18,6 +18,19 @@ function getCspMode() {
     }
     return appConfig.mode;
 }
+function getReportUri() {
+    if (!appConfig) {
+        throw new Error(MISSING_CONFIG_ERROR);
+    }
+    return 'https://app-cspconsole-com-d172968e.api.cspconsole.com/v1/reports';
+    // return appConfig.reportUri;
+}
+function shouldUseDebugMode() {
+    if (!appConfig) {
+        throw new Error(MISSING_CONFIG_ERROR);
+    }
+    return appConfig.debug;
+}
 
 function shouldUseEnforceMode() {
     return getCspMode() === 'enforce';
@@ -26,16 +39,58 @@ function shouldUseReportOnlyMode() {
     return getCspMode() === 'reportOnly';
 }
 
+function sendReportToApi(data) {
+    fetch(getReportUri(), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 'csp-report': data })
+    })
+        .then(response => response.json())
+        .then(data => {
+        if (shouldUseDebugMode()) {
+            console.log('Success:', data);
+        }
+    })
+        .catch((error) => {
+        if (shouldUseDebugMode()) {
+            console.error('Error:', error);
+        }
+    });
+}
+function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, referrer }) {
+    const data = {
+        "blocked-uri": blockedUri,
+        "disposition": getCspMode(),
+        "document-uri": documentUrl,
+        "effective-directive": directive,
+        "original-policy": originalPolicy,
+        "referrer": referrer,
+        "status-code": 200,
+        "violated-directive": directive
+    };
+    if (shouldUseDebugMode()) {
+        console.log('Violation report');
+        console.log(data);
+        console.log('-----------------');
+    }
+    sendReportToApi(data);
+}
+
 function cspWebGuard() {
-    if (shouldUseEnforceMode()) {
-        window.addEventListener('securitypolicyviolation', function (event) {
-            console.log('Violation happened');
-            console.log(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
-            console.log('-----------------');
-            // reportViolation(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
-        });
+    if (shouldUseReportOnlyMode()) {
         return;
     }
+    window.addEventListener('securitypolicyviolation', function (event) {
+        reportViolation({
+            directive: event.effectiveDirective,
+            blockedUri: event.blockedURI,
+            documentUrl: event.documentURI,
+            originalPolicy: event.originalPolicy,
+            referrer: event.referrer
+        });
+    });
 }
 
 function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
