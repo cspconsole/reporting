@@ -65,7 +65,7 @@ function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, r
         "document-uri": documentUrl,
         "effective-directive": directive,
         "original-policy": originalPolicy,
-        "referrer": referrer,
+        "referrer": referrer ?? '',
         "status-code": 200,
         "violated-directive": directive
     };
@@ -92,6 +92,25 @@ function cspWebGuard() {
     });
 }
 
+function guessMimeType(url) {
+    const extension = url.split('.').pop()?.split('?')[0].toLowerCase();
+    if (!extension) {
+        return 'application/octet-stream';
+    }
+    return {
+        js: 'text/javascript',
+        css: 'text/css',
+        html: 'text/html',
+        json: 'application/json',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        gif: 'image/gif',
+        svg: 'image/svg+xml',
+        ico: 'image/x-icon',
+        wasm: 'application/wasm',
+    }[extension] || 'application/octet-stream';
+}
 function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
     initConfig({ policies, mode, reportUri });
     if (shouldUseEnforceMode()) {
@@ -109,7 +128,11 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
         });
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data?.type === 'ASSET_FETCHED') {
-                console.log('[SW Asset Fetched]', event.data);
+                const normalizedData = {
+                    ...event.data,
+                    contentType: event.data?.contentType ?? guessMimeType(event.data?.url)
+                };
+                console.log('[SW Asset Fetched]', normalizedData);
             }
         });
     }

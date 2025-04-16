@@ -3,5 +3,5 @@ export declare function reportViolation({ directive, blockedUri, documentUrl, or
     blockedUri: string;
     documentUrl: string;
     originalPolicy: string;
-    referrer: string;
+    referrer?: string;
 }): void;
