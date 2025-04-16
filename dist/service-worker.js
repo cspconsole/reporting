@@ -14,13 +14,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         (async () => {
             const response = await fetch(request.clone());
-
-            // Get more info from the response
             const responseClone = response.clone();
             const contentType = responseClone.headers.get('Content-Type');
             const contentLength = responseClone.headers.get('Content-Length');
 
-            // Send message back to all clients
             const clientsList = await self.clients.matchAll();
             for (const client of clientsList) {
                 client.postMessage({
