@@ -35,8 +35,8 @@ export function getReportUri(): Config['reportUri'] {
     if (!appConfig) {
         throw new Error(MISSING_CONFIG_ERROR);
     }
-
-    return appConfig.reportUri;
+    return 'https://app-cspconsole-com-d172968e.api.cspconsole.com/v1/reports';
+    // return appConfig.reportUri;
 }
 
 export function shouldUseDebugMode(): Config['debug']{

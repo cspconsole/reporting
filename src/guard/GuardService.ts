@@ -1,14 +1,18 @@
-import { shouldUseEnforceMode } from "../config/ModeService";
+import { shouldUseReportOnlyMode } from "../config/ModeService";
+import { reportViolation } from "../reporting/ReportService";
 
 export function cspWebGuard(): void {
-    if (shouldUseEnforceMode()) {
-        window.addEventListener('securitypolicyviolation', function(event) {
-            console.log('Violation happened');
-            console.log(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
-            console.log('-----------------');
-            // reportViolation(event.effectiveDirective, event.blockedURI, event.documentURI, event.originalPolicy, event.referrer);
-        });
+    if (shouldUseReportOnlyMode()) {
         return;
     }
 
+    window.addEventListener('securitypolicyviolation', function(event) {
+        reportViolation({
+            directive: event.effectiveDirective,
+            blockedUri: event.blockedURI,
+            documentUrl: event.documentURI,
+            originalPolicy:event.originalPolicy,
+            referrer: event.referrer
+        });
+    });
 }
