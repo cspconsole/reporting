@@ -32,14 +32,26 @@ function sendReportToApi(data: ApiReportPayload): void {
         });
 }
 
-export function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, referrer }: {directive: string; blockedUri: string; documentUrl: string; originalPolicy: string; referrer: string;}) {
+export function reportViolation({
+    directive,
+    blockedUri,
+    documentUrl,
+    originalPolicy,
+    referrer
+}: {
+    directive: string;
+    blockedUri: string;
+    documentUrl: string;
+    originalPolicy: string;
+    referrer?: string;
+}) {
     const data = {
         "blocked-uri": blockedUri,
         "disposition": getCspMode(),
         "document-uri": documentUrl,
         "effective-directive": directive,
         "original-policy": originalPolicy,
-        "referrer": referrer,
+        "referrer": referrer ?? '',
         "status-code": 200,
         "violated-directive": directive
     };
