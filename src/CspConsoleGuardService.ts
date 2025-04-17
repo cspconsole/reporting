@@ -49,8 +49,9 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: G
                 directivesBasedOnMimeType.forEach((mimeTypeBasedCspDirective) => {
                     const values = getAllCspDirectivesByType({ cspHeader: directives, type: mimeTypeBasedCspDirective });
 
-                    values.forEach((value) => {
+                    for (const value of values) {
                         const normalizedValue = normalizeCspDirectiveValue(value);
+
                         if (!isUrlAllowedByDirectiveValue(normalizedValue, normalizedData.url)) {
                             reportViolation({
                                 directive: mimeTypeBasedCspDirective,
@@ -58,8 +59,9 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: G
                                 originalPolicy: directives,
                                 documentUrl: window.location.href
                             });
+                            return;
                         }
-                    });
+                    }
                 });
 
             }

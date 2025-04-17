@@ -231,7 +231,7 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
                 const directivesBasedOnMimeType = getCspDirectivesForMimeType(normalizedData.contentType);
                 directivesBasedOnMimeType.forEach((mimeTypeBasedCspDirective) => {
                     const values = getAllCspDirectivesByType({ cspHeader: directives, type: mimeTypeBasedCspDirective });
-                    values.forEach((value) => {
+                    for (const value of values) {
                         const normalizedValue = normalizeCspDirectiveValue(value);
                         if (!isUrlAllowedByDirectiveValue(normalizedValue, normalizedData.url)) {
                             reportViolation({
@@ -240,8 +240,9 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
                                 originalPolicy: directives,
                                 documentUrl: window.location.href
                             });
+                            return;
                         }
-                    });
+                    }
                 });
             }
         });
