@@ -1,3 +1,19 @@
+export type CspDirective =
+    | 'default-src'
+    | 'script-src'
+    | 'script-src-elem'
+    | 'script-src-attr'
+    | 'style-src'
+    | 'style-src-elem'
+    | 'style-src-attr'
+    | 'img-src'
+    | 'font-src'
+    | 'media-src'
+    | 'connect-src'
+    | 'frame-src'
+    | 'child-src'
+    | 'object-src';
+
 export function isUnsafeInline(directiveValue: string): boolean {
     return directiveValue === 'unsafe-inline';
 }

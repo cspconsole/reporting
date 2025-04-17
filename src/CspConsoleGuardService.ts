@@ -1,32 +1,15 @@
-import { Config, initConfig } from "./config/ConfigService";
+import { Config, getPolicies, initConfig } from "./config/ConfigService";
 import { cspWebGuard } from "./guard/GuardService";
 import { shouldUseEnforceMode } from "./config/ModeService";
+import { getCspDirectivesForMimeType, guessMimeTypeFromUrl } from "./mime-type/MimeTypeService";
+import { getCspConfigByRoute } from "./directives/DirectiveService";
+import { getAllCspDirectivesByType } from "./directives/DirectiveParserService";
+import { isUrlAllowedByDirectiveValue, normalizeCspDirectiveValue } from "./directives/DirectiveRegexService";
+import { reportViolation } from "./reporting/ReportService";
 
 type GuardConfig = Config & {
     onGuardInit?(): void;
 };
-
-function guessMimeType(url: string): string {
-    const extension = url.split('.').pop()?.split('?')[0].toLowerCase();
-
-    if (!extension) {
-        return 'application/octet-stream';
-    }
-
-    return {
-        js: 'text/javascript',
-        css: 'text/css',
-        html: 'text/html',
-        json: 'application/json',
-        png: 'image/png',
-        jpg: 'image/jpeg',
-        jpeg: 'image/jpeg',
-        gif: 'image/gif',
-        svg: 'image/svg+xml',
-        ico: 'image/x-icon',
-        wasm: 'application/wasm',
-    }[extension] || 'application/octet-stream';
-}
 
 export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: GuardConfig): void {
     initConfig({ policies, mode, reportUri });
@@ -50,9 +33,35 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: G
             if (event.data?.type === 'ASSET_FETCHED') {
                 const normalizedData = {
                     ...event.data,
-                    contentType: event.data?.contentType ?? guessMimeType(event.data?.url)
+                    contentType: event.data?.contentType ?? guessMimeTypeFromUrl(event.data?.url)
                 };
+
                 console.log('[SW Asset Fetched]', normalizedData);
+
+                // get policies for current url
+                const directives = getCspConfigByRoute(getPolicies(), window.location.href);
+
+                if (!directives) {
+                    return;
+                }
+
+                const directivesBasedOnMimeType = getCspDirectivesForMimeType(normalizedData.contentType);
+                directivesBasedOnMimeType.forEach((mimeTypeBasedCspDirective) => {
+                    const values = getAllCspDirectivesByType({ cspHeader: directives, type: mimeTypeBasedCspDirective });
+
+                    values.forEach((value) => {
+                        const normalizedValue = normalizeCspDirectiveValue(value);
+                        if (!isUrlAllowedByDirectiveValue(normalizedValue, normalizedData.url)) {
+                            reportViolation({
+                                directive: mimeTypeBasedCspDirective,
+                                blockedUri: normalizedData.url,
+                                originalPolicy: directives,
+                                documentUrl: window.location.href
+                            });
+                        }
+                    });
+                });
+
             }
         });
     }
