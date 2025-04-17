@@ -18,12 +18,18 @@ self.addEventListener('fetch', (event) => {
             const contentType = responseClone.headers.get('Content-Type');
             const contentLength = responseClone.headers.get('Content-Length');
 
+            const method = request.method.toUpperCase();
+
+            if (method !== 'GET') {
+                return response;
+            }
+
             const clientsList = await self.clients.matchAll();
             for (const client of clientsList) {
                 client.postMessage({
                     type: 'ASSET_FETCHED',
                     url: request.url,
-                    method: request.method,
+                    method: method,
                     headers: Object.fromEntries(request.headers.entries()),
                     status: response.status,
                     statusText: response.statusText,
