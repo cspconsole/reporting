@@ -60,7 +60,7 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, deb
                                 blockedUri: normalizedData.url,
                                 originalPolicy: getPoliciesByDirective(directives, value)!,
                                 documentUrl: window.location.href,
-                                statusCode: normalizedData.statusCode
+                                statusCode: normalizedData.status
                             });
                             return;
                         }

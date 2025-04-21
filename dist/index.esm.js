@@ -77,16 +77,50 @@ function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, r
     sendReportToApi(data);
 }
 
+function extractCSPDirective(cspHeader, directive) {
+    const directives = cspHeader.split(';').map(d => d.trim());
+    for (const entry of directives) {
+        const entryDirective = entry.split(' ')[0];
+        if (entryDirective === directive) {
+            return entry.slice(directive.length).trim();
+        }
+    }
+    return null;
+}
+function getPoliciesByDirective(cspHeader, directive) {
+    const extractedCSPDirective = extractCSPDirective(cspHeader, directive);
+    if (!extractedCSPDirective) {
+        return null;
+    }
+    return `${directive} ${extractedCSPDirective};`;
+}
+function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }) {
+    const selfReplacements = [
+        selfReplacementUrl ?? location.protocol + '//' + location.host,
+        '/'
+    ];
+    if (cspHeader.indexOf(type) < 0) {
+        return [];
+    }
+    const cspDirective = extractCSPDirective(cspHeader, type);
+    if (!cspDirective) {
+        return [];
+    }
+    const cspDirectives = cspDirective.split(' ').filter(val => val.length > 0).map(val => val.replace(/'/g, ""));
+    return cspDirectives.flatMap(value => value === 'self' ? selfReplacements : value);
+}
+
 function cspWebGuard() {
     if (shouldUseReportOnlyMode()) {
         return;
     }
     window.addEventListener('securitypolicyviolation', function (event) {
+        const directive = event.effectiveDirective ?? event.violatedDirective;
         reportViolation({
-            directive: event.effectiveDirective ?? event.violatedDirective, // check it
+            directive,
             blockedUri: event.blockedURI,
             documentUrl: event.documentURI,
-            originalPolicy: event.originalPolicy,
+            originalPolicy: getPoliciesByDirective(event.originalPolicy, directive),
             referrer: event.referrer,
             statusCode: event.statusCode
         });
@@ -169,39 +203,6 @@ function getCspConfigByRoute(routes, currentUrl) {
     return undefined;
 }
 
-function extractCSPDirective(cspHeader, directive) {
-    const directives = cspHeader.split(';').map(d => d.trim());
-    for (const entry of directives) {
-        const entryDirective = entry.split(' ')[0];
-        if (entryDirective === directive) {
-            return entry.slice(directive.length).trim();
-        }
-    }
-    return null;
-}
-function getPoliciesByDirective(cspHeader, directive) {
-    const extractedCSPDirective = extractCSPDirective(cspHeader, directive);
-    if (!extractedCSPDirective) {
-        return null;
-    }
-    return `${directive} ${extractedCSPDirective};`;
-}
-function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }) {
-    const selfReplacements = [
-        selfReplacementUrl ?? location.protocol + '//' + location.host,
-        '/'
-    ];
-    if (cspHeader.indexOf(type) < 0) {
-        return [];
-    }
-    const cspDirective = extractCSPDirective(cspHeader, type);
-    if (!cspDirective) {
-        return [];
-    }
-    const cspDirectives = cspDirective.split(' ').filter(val => val.length > 0).map(val => val.replace(/'/g, ""));
-    return cspDirectives.flatMap(value => value === 'self' ? selfReplacements : value);
-}
-
 function normalizeCspDirectiveValue(value) {
     return value.replace('*', '[^\.]+');
 }
@@ -246,7 +247,7 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, debug }) {
                                 blockedUri: normalizedData.url,
                                 originalPolicy: getPoliciesByDirective(directives, value),
                                 documentUrl: window.location.href,
-                                statusCode: normalizedData.statusCode
+                                statusCode: normalizedData.status
                             });
                             return;
                         }
