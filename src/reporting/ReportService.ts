@@ -55,8 +55,7 @@ export function reportViolation({
     };
 
     if (shouldUseDebugMode()) {
-        console.log('Violation report');
-        console.log(data);
+        console.log('Violation report', data);
         return;
     }
 
