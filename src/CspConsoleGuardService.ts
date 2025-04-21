@@ -11,8 +11,8 @@ type GuardConfig = Config & {
     onGuardInit?(): void;
 };
 
-export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: GuardConfig): void {
-    initConfig({ policies, mode, reportUri });
+export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, debug }: GuardConfig): void {
+    initConfig({ policies, mode, reportUri, debug });
 
     if (shouldUseEnforceMode()) {
         cspWebGuard();
@@ -57,7 +57,8 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }: G
                                 directive: mimeTypeBasedCspDirective,
                                 blockedUri: normalizedData.url,
                                 originalPolicy: directives,
-                                documentUrl: window.location.href
+                                documentUrl: window.location.href,
+                                statusCode: normalizedData.statusCode
                             });
                             return;
                         }

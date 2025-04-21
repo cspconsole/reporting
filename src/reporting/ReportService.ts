@@ -37,13 +37,15 @@ export function reportViolation({
     blockedUri,
     documentUrl,
     originalPolicy,
-    referrer
+    referrer,
+    statusCode
 }: {
     directive: string;
     blockedUri: string;
     documentUrl: string;
     originalPolicy: string;
     referrer?: string;
+    statusCode?: number;
 }) {
     const data = {
         "blocked-uri": blockedUri,
@@ -52,7 +54,7 @@ export function reportViolation({
         "effective-directive": directive,
         "original-policy": originalPolicy,
         "referrer": referrer ?? '',
-        "status-code": 200,
+        "status-code": statusCode ?? 200,
         "violated-directive": directive
     };
 

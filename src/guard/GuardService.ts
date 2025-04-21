@@ -8,11 +8,12 @@ export function cspWebGuard(): void {
 
     window.addEventListener('securitypolicyviolation', function(event) {
         reportViolation({
-            directive: event.effectiveDirective,
+            directive: event.effectiveDirective ?? event.violatedDirective, // check it
             blockedUri: event.blockedURI,
             documentUrl: event.documentURI,
             originalPolicy:event.originalPolicy,
-            referrer: event.referrer
+            referrer: event.referrer,
+            statusCode: event.statusCode
         });
     });
 }
