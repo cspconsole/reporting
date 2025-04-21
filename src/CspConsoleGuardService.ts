@@ -3,7 +3,10 @@ import { cspWebGuard } from "./guard/GuardService";
 import { shouldUseEnforceMode } from "./config/ModeService";
 import { getCspDirectivesForMimeType, guessMimeTypeFromUrl } from "./mime-type/MimeTypeService";
 import { getCspConfigByRoute } from "./directives/DirectiveService";
-import { getAllCspDirectivesByType } from "./directives/DirectiveParserService";
+import {
+    getAllCspDirectivesByType,
+    getPoliciesByDirective
+} from "./directives/DirectiveParserService";
 import { isUrlAllowedByDirectiveValue, normalizeCspDirectiveValue } from "./directives/DirectiveRegexService";
 import { reportViolation } from "./reporting/ReportService";
 
@@ -38,7 +41,6 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, deb
 
                 console.log('[SW Asset Fetched]', normalizedData);
 
-                // get policies for current url
                 const directives = getCspConfigByRoute(getPolicies(), window.location.href);
 
                 if (!directives) {
@@ -56,7 +58,7 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, deb
                             reportViolation({
                                 directive: mimeTypeBasedCspDirective,
                                 blockedUri: normalizedData.url,
-                                originalPolicy: directives,
+                                originalPolicy: getPoliciesByDirective(directives, value)!,
                                 documentUrl: window.location.href,
                                 statusCode: normalizedData.statusCode
                             });

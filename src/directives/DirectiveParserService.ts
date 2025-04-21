@@ -10,6 +10,17 @@ function extractCSPDirective(cspHeader: string, directive: string): string | nul
 
     return null;
 }
+
+export function getPoliciesByDirective(cspHeader: string, directive: string): string | null {
+    const extractedCSPDirective = extractCSPDirective(cspHeader, directive);
+
+    if (!extractedCSPDirective) {
+        return null;
+    }
+
+    return `${directive} ${extractedCSPDirective};`;
+}
+
 export function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }: {cspHeader: string; type: string; selfReplacementUrl?: string;}): string[] {
     const selfReplacements = [
         selfReplacementUrl ?? location.protocol + '//' + location.host,
