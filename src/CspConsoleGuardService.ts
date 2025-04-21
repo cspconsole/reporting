@@ -58,7 +58,7 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, deb
                             reportViolation({
                                 directive: mimeTypeBasedCspDirective,
                                 blockedUri: normalizedData.url,
-                                originalPolicy: getPoliciesByDirective(directives, value)!,
+                                originalPolicy: getPoliciesByDirective(directives, mimeTypeBasedCspDirective)!,
                                 documentUrl: window.location.href,
                                 statusCode: normalizedData.status
                             });
