@@ -58,7 +58,7 @@ function sendReportToApi(data) {
         }
     });
 }
-function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, referrer }) {
+function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, referrer, statusCode }) {
     const data = {
         "blocked-uri": blockedUri,
         "disposition": getCspMode(),
@@ -66,7 +66,7 @@ function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, r
         "effective-directive": directive,
         "original-policy": originalPolicy,
         "referrer": referrer ?? '',
-        "status-code": 200,
+        "status-code": statusCode ?? 200,
         "violated-directive": directive
     };
     if (shouldUseDebugMode()) {
@@ -83,11 +83,12 @@ function cspWebGuard() {
     }
     window.addEventListener('securitypolicyviolation', function (event) {
         reportViolation({
-            directive: event.effectiveDirective,
+            directive: event.effectiveDirective ?? event.violatedDirective, // check it
             blockedUri: event.blockedURI,
             documentUrl: event.documentURI,
             originalPolicy: event.originalPolicy,
-            referrer: event.referrer
+            referrer: event.referrer,
+            statusCode: event.statusCode
         });
     });
 }
@@ -178,6 +179,13 @@ function extractCSPDirective(cspHeader, directive) {
     }
     return null;
 }
+function getPoliciesByDirective(cspHeader, directive) {
+    const extractedCSPDirective = extractCSPDirective(cspHeader, directive);
+    if (!extractedCSPDirective) {
+        return null;
+    }
+    return `${directive} ${extractedCSPDirective};`;
+}
 function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }) {
     const selfReplacements = [
         selfReplacementUrl ?? location.protocol + '//' + location.host,
@@ -201,8 +209,8 @@ function isUrlAllowedByDirectiveValue(value, url) {
     return new RegExp('^' + value).test(url);
 }
 
-function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
-    initConfig({ policies, mode, reportUri });
+function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, debug }) {
+    initConfig({ policies, mode, reportUri, debug });
     if (shouldUseEnforceMode()) {
         cspWebGuard();
         onGuardInit?.();
@@ -223,7 +231,6 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
                     contentType: event.data?.contentType ?? guessMimeTypeFromUrl(event.data?.url)
                 };
                 console.log('[SW Asset Fetched]', normalizedData);
-                // get policies for current url
                 const directives = getCspConfigByRoute(getPolicies(), window.location.href);
                 if (!directives) {
                     return;
@@ -237,8 +244,9 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri }) {
                             reportViolation({
                                 directive: mimeTypeBasedCspDirective,
                                 blockedUri: normalizedData.url,
-                                originalPolicy: directives,
-                                documentUrl: window.location.href
+                                originalPolicy: getPoliciesByDirective(directives, value),
+                                documentUrl: window.location.href,
+                                statusCode: normalizedData.statusCode
                             });
                             return;
                         }
