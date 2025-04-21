@@ -21,14 +21,10 @@ function sendReportToApi(data: ApiReportPayload): void {
     })
         .then(response => response.json())
         .then(data => {
-            if (shouldUseDebugMode()) {
-                console.log('Success:', data);
-            }
+            console.log('Success:', data);
         })
         .catch((error) => {
-            if (shouldUseDebugMode()) {
-                console.error('Error:', error);
-            }
+            console.error('Error:', error);
         });
 }
 
@@ -61,7 +57,7 @@ export function reportViolation({
     if (shouldUseDebugMode()) {
         console.log('Violation report');
         console.log(data);
-        console.log('-----------------');
+        return;
     }
 
     sendReportToApi(data);

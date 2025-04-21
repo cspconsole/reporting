@@ -39,8 +39,6 @@ export function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, deb
                     contentType: event.data?.contentType ?? guessMimeTypeFromUrl(event.data?.url)
                 };
 
-                console.log('[SW Asset Fetched]', normalizedData);
-
                 const directives = getCspConfigByRoute(getPolicies(), window.location.href);
 
                 if (!directives) {

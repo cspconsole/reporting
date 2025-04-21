@@ -48,14 +48,10 @@ function sendReportToApi(data) {
     })
         .then(response => response.json())
         .then(data => {
-        if (shouldUseDebugMode()) {
-            console.log('Success:', data);
-        }
+        console.log('Success:', data);
     })
         .catch((error) => {
-        if (shouldUseDebugMode()) {
-            console.error('Error:', error);
-        }
+        console.error('Error:', error);
     });
 }
 function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, referrer, statusCode }) {
@@ -72,7 +68,7 @@ function reportViolation({ directive, blockedUri, documentUrl, originalPolicy, r
     if (shouldUseDebugMode()) {
         console.log('Violation report');
         console.log(data);
-        console.log('-----------------');
+        return;
     }
     sendReportToApi(data);
 }
@@ -231,7 +227,6 @@ function cspConsoleWebGuard({ onGuardInit, policies, mode, reportUri, debug }) {
                     ...event.data,
                     contentType: event.data?.contentType ?? guessMimeTypeFromUrl(event.data?.url)
                 };
-                console.log('[SW Asset Fetched]', normalizedData);
                 const directives = getCspConfigByRoute(getPolicies(), window.location.href);
                 if (!directives) {
                     return;
