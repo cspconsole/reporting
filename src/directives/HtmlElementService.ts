@@ -1,5 +1,9 @@
-function hasElementSrc<T extends Element>(element: T): element is T & { src: string } {
+export function hasElementSrc<T extends Element>(element: T): element is T & { src: string } {
     return !!element.getAttribute('src');
+}
+
+export function hasElementHref<T extends Element>(element: T): element is T & { href: string } {
+    return !!element.getAttribute('href');
 }
 
 export function isElementWithNonceAndSrc({ element }: {element: Element}): boolean {
@@ -34,6 +38,14 @@ export function isSrcElementMatchingDirectiveValueRegex({ element, regex }:{elem
     }
 
     return new RegExp(regex).test(element.src);
+}
+
+export function isHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
+    if (!hasElementHref(element)) {
+        return false;
+    }
+
+    return new RegExp(regex).test(element.href);
 }
 
 export function isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
