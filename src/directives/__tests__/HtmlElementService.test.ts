@@ -3,7 +3,7 @@ import {
     hasElementSrc, isElementDataCspElem,
     isElementDataCspHref,
     isElementDataCspSrc, isElementScriptOrStyle,
-    isElementWithNonceAndSrc
+    isElementWithNonceAndSrc, isNonceMatchingDirectiveValue
 } from "../HtmlElementService";
 
 describe('HtmlElementService', () => {
@@ -165,6 +165,24 @@ describe('HtmlElementService', () => {
                 const result = isElementScriptOrStyle(element);
                 expect(result).toBe(true);
             });
+        });
+    });
+
+    describe('isNonceMatchingDirectiveValue', () => {
+        it('returns true when nonce matches directive value', () => {
+            const element = document.createElement('script');
+            element.setAttribute('nonce', 'XYZ');
+            const result = isNonceMatchingDirectiveValue({ element, directiveValue: 'XYZ' });
+
+            expect(result).toBe(true);
+        });
+
+        it('returns false when nonce does not match directive value', () => {
+            const element = document.createElement('script');
+            element.setAttribute('nonce', 'ZYX');
+            const result = isNonceMatchingDirectiveValue({ element, directiveValue: 'XYZ' });
+
+            expect(result).toBe(false);
         });
     });
 });

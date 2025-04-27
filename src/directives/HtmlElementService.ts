@@ -33,7 +33,7 @@ export function isElementScriptOrStyle(element: Element): element is HTMLScriptE
 }
 
 export function isNonceMatchingDirectiveValue({ element, directiveValue }: {element: Element; directiveValue: string}): boolean {
-    return element.getAttribute('none') === directiveValue;
+    return element.getAttribute('nonce') === directiveValue;
 }
 
 export function isSrcElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
