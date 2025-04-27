@@ -6,7 +6,7 @@ export function hasElementHref<T extends Element>(element: T): element is T & { 
     return !!element.getAttribute('href');
 }
 
-export function isElementWithNonceAndSrc({ element }: {element: Element}): boolean {
+export function isElementWithNonceAndSrc(element :Element): boolean  {
     const nonce = element.getAttribute('nonce');
 
     if (!nonce) {
@@ -17,11 +17,15 @@ export function isElementWithNonceAndSrc({ element }: {element: Element}): boole
 }
 
 export function isElementDataCspSrc<T extends Element>( element: T): element is T & { 'data-csp-src': string } {
-    return !!element.getAttribute('data-csp-src');
+    return element.getAttribute('data-csp-attr') === 'src';
 }
 
 export function isElementDataCspHref<T extends Element>( element: T): element is T & { 'data-csp-href': string } {
-    return !!element.getAttribute('data-csp-href');
+    return element.getAttribute('data-csp-attr') === 'href';
+}
+
+export function isElementDataCspElem<T extends Element>( element: T): element is T & { 'data-csp-elem': string } {
+    return !!element.getAttribute('data-csp-elem');
 }
 
 export function isElementScriptOrStyle(element: Element): element is HTMLScriptElement | HTMLStyleElement {
@@ -67,7 +71,7 @@ export function isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex
         return false;
     }
 
-    let attribute = element.getAttribute('data-csp-href');
+    let attribute = element.getAttribute('data-csp-src');
 
     if (!attribute) {
         return false;

@@ -1,9 +1,15 @@
 import { getAllCspDirectivesByType } from "../directives/DirectiveParserService";
 import {
     hasElementHref,
-    hasElementSrc, isCspDataHrefElementMatchingDirectiveValueRegex,
-    isCspDataSrcElementMatchingDirectiveValueRegex, isElementDataCspHref, isElementDataCspSrc, isElementScriptOrStyle,
-    isElementWithNonceAndSrc, isHrefElementMatchingDirectiveValueRegex,
+    hasElementSrc,
+    isCspDataHrefElementMatchingDirectiveValueRegex,
+    isCspDataSrcElementMatchingDirectiveValueRegex,
+    isElementDataCspElem,
+    isElementDataCspHref,
+    isElementDataCspSrc,
+    isElementScriptOrStyle,
+    isElementWithNonceAndSrc,
+    isHrefElementMatchingDirectiveValueRegex,
     isNonceMatchingDirectiveValue,
     isSrcElementMatchingDirectiveValueRegex
 } from "../directives/HtmlElementService";
@@ -17,7 +23,15 @@ const HTML_ELEMENTS = {
     'iframe': 'frame-src',
 };
 
-function blockSrcElement(element: Element & {src: string}): void {
+function blockSrcElement(element: Element): void {
+    if (!hasElementSrc(element)) {
+        return;
+    }
+
+    if (isElementDataCspSrc(element)) {
+        return;
+    }
+
     element.setAttribute('data-csp-src', element.src);
     element.setAttribute('data-csp-attr', 'src');
     element.removeAttribute('src');
@@ -25,75 +39,123 @@ function blockSrcElement(element: Element & {src: string}): void {
 }
 
 function unlockSrcElement(element: Element): void {
+    if (!isElementDataCspSrc) {
+        return;
+    }
+
     element.setAttribute('src', element.getAttribute('data-csp-src')!);
-    removeDataCspResultAttribute(element);
+    removeDataCspAttributes(element);
+}
+
+function blockHrefElement(element: Element): void {
+    if (!hasElementHref(element)) {
+        return;
+    }
+
+    if (isElementDataCspHref(element)) {
+        return;
+    }
+
+    element.setAttribute('data-csp-src', element.href);
+    element.setAttribute('data-csp-attr', 'href');
+    element.removeAttribute('href');
+    addDataCspResultAttribute(element);
+}
+
+function unlockHrefElement(element: Element): void {
+    if (!isElementDataCspHref(element)) {
+        return;
+    }
+
+    element.setAttribute('href', element.getAttribute('data-csp-src')!);
+    removeDataCspAttributes(element);
 }
 
 function addDataCspResultAttribute(element: Element): void {
     element.setAttribute('data-csp-result', 'disabled');
 }
 
-function removeDataCspResultAttribute(element: Element): void {
+function removeDataCspAttributes(element: Element): void {
+    element.removeAttribute('data-csp-src');
+    element.removeAttribute('data-csp-attr');
     element.removeAttribute('data-csp-result');
 }
 
+function blockUnsafeInline(element: Element): void {
+    if (isElementDataCspElem(element)) {
+        return;
+    }
+
+    element.setAttribute('data-csp-elem', 'disabled');
+    element.innerHTML = '/*' + element.innerHTML + '*/';
+}
+
+function unlockUnsafeInline(element: Element): void {
+    if (!isElementDataCspElem(element)) {
+        return;
+    }
+
+    element.removeAttribute('data-csp-elem');
+    element.innerHTML = element.innerHTML.trim().replace(/^\/\*/, '').replace(/\*\/$/, '');
+}
+
 function guardHtmlElement(element: Element, value: string): void {
-    if (isElementWithNonceAndSrc({ element })) {
+    if (isElementWithNonceAndSrc(element)) {
         if (isNonceMatchingDirectiveValue({ element, directiveValue: value })) {
-            // allowed nonce
+            unlockSrcElement(element);
             return;
         } else {
-            //disallowed nonce
+            blockSrcElement(element);
             return;
         }
     }
 
     if (hasElementSrc(element)) {
         if (isSrcElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            // allowed
+            unlockSrcElement(element);
             return;
         } else {
-            // disallowed
+            blockSrcElement(element);
             return;
         }
     }
 
     if (isElementDataCspSrc(element)) {
         if (isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: value })){
-            // allowed
+            unlockSrcElement(element);
             return;
         } else {
-            // disallowed
+            blockSrcElement(element);
             return;
         }
     }
 
     if (hasElementHref(element)) {
         if (isHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            // allowed
+            unlockHrefElement(element);
             return;
         } else {
-            // disallowed
+            blockHrefElement(element);
             return;
         }
     }
 
     if (isElementDataCspHref(element)) {
         if (isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            // allowed
+            unlockHrefElement(element);
             return;
         } else {
-            // disallowed
+            blockHrefElement(element);
             return;
         }
     }
 
     if (isElementScriptOrStyle(element)) {
         if (isUnsafeInline(value)) {
-            // if does not have data-csp-whatever attribute, comment the content
+            blockUnsafeInline(element);
             return;
         } else {
-            // if has data-csp-whatever attribute, then remove comment
+            unlockUnsafeInline(element);
             return;
         }
     }
