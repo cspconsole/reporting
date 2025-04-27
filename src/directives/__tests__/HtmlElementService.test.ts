@@ -1,0 +1,170 @@
+import {
+    hasElementHref,
+    hasElementSrc, isElementDataCspElem,
+    isElementDataCspHref,
+    isElementDataCspSrc, isElementScriptOrStyle,
+    isElementWithNonceAndSrc
+} from "../HtmlElementService";
+
+describe('HtmlElementService', () => {
+    describe('hasElementSrc', () => {
+        it('returns true when element has src attribute', () => {
+            const element = document.createElement('img');
+            element.setAttribute('src', "https://cspconsole.com/hello.png");
+
+            const result = hasElementSrc(element);
+
+            expect(result).toBe(true);
+        });
+
+        it('returns false when element has src attribute', () => {
+            const element = document.createElement('link');
+            element.setAttribute('href', "https://cspconsole.com/style.css");
+
+            const result = hasElementSrc(element);
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('hasElementHref', () => {
+        it('returns false when element has src attribute', () => {
+            const element = document.createElement('img');
+            element.setAttribute('src', "https://cspconsole.com/hello.png");
+
+            const result = hasElementHref(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element has src attribute', () => {
+            const element = document.createElement('link');
+            element.setAttribute('href', "https://cspconsole.com/style.css");
+
+            const result = hasElementHref(element);
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isElementWithNonceAndSrc', () => {
+        it('returns false when element does not have a nonce', () => {
+            const element = document.createElement('img');
+            element.setAttribute('src', "https://cspconsole.com/hello.png");
+
+            const result = isElementWithNonceAndSrc(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element has a nonce but is does not have src', () => {
+            const element = document.createElement('link');
+            element.setAttribute('nonce', 'XYZ');
+            element.setAttribute('href', "https://cspconsole.com/style.css");
+
+            const result = isElementWithNonceAndSrc(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element has a nonce and src', () => {
+            const element = document.createElement('img');
+            element.setAttribute('nonce', 'XYZ');
+            element.setAttribute('src', "https://cspconsole.com/hello.png");
+
+            const result = isElementWithNonceAndSrc(element);
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isElementDataCspSrc', () => {
+        it('returns false when element data-csp-attr is not src', () => {
+            const element = document.createElement('link');
+            element.setAttribute('data-csp-attr', 'href');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/style.css');
+
+            const result = isElementDataCspSrc(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element data-csp-attr is src', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
+
+            const result = isElementDataCspSrc(element);
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isElementDataCspHref', () => {
+        it('returns true when element data-csp-attr is href', () => {
+            const element = document.createElement('link');
+            element.setAttribute('data-csp-attr', 'href');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/style.css');
+
+            const result = isElementDataCspHref(element);
+
+            expect(result).toBe(true);
+        });
+
+        it('returns false when element data-csp-attr is not href', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
+
+            const result = isElementDataCspHref(element);
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('isElementDataCspElem', () => {
+        it('returns false when element does not have data-csp-elem', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
+
+            const result = isElementDataCspElem(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element has data-csp-elem', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-elem', 'disabled');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
+
+            const result = isElementDataCspElem(element);
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isElementScriptOrStyle', () => {
+        it('returns false when element is not script or style', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
+
+            const result = isElementScriptOrStyle(element);
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element is script or style', () => {
+            const element1 = document.createElement('script');
+
+            const element2 = document.createElement('style');
+
+            [element1, element2].forEach((element) => {
+                const result = isElementScriptOrStyle(element);
+                expect(result).toBe(true);
+            });
+        });
+    });
+});
