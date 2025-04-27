@@ -44,14 +44,6 @@ export function isSrcElementMatchingDirectiveValueRegex({ element, regex }:{elem
     return new RegExp(regex).test(element.src);
 }
 
-export function isHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
-    if (!hasElementHref(element)) {
-        return false;
-    }
-
-    return new RegExp(regex).test(element.href);
-}
-
 export function isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
     if (!isElementDataCspSrc(element)) {
         return false;
@@ -64,6 +56,14 @@ export function isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex 
     }
 
     return new RegExp(regex).test(attribute);
+}
+
+export function isHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
+    if (!hasElementHref(element)) {
+        return false;
+    }
+
+    return new RegExp(regex).test(element.href);
 }
 
 export function isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
