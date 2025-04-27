@@ -1,9 +1,15 @@
 import {
     hasElementHref,
-    hasElementSrc, isElementDataCspElem,
+    hasElementSrc, isCspDataHrefElementMatchingDirectiveValueRegex,
+    isCspDataSrcElementMatchingDirectiveValueRegex,
+    isElementDataCspElem,
     isElementDataCspHref,
-    isElementDataCspSrc, isElementScriptOrStyle,
-    isElementWithNonceAndSrc, isNonceMatchingDirectiveValue, isSrcElementMatchingDirectiveValueRegex
+    isElementDataCspSrc,
+    isElementScriptOrStyle,
+    isElementWithNonceAndSrc,
+    isHrefElementMatchingDirectiveValueRegex,
+    isNonceMatchingDirectiveValue,
+    isSrcElementMatchingDirectiveValueRegex
 } from "../HtmlElementService";
 
 describe('HtmlElementService', () => {
@@ -203,10 +209,110 @@ describe('HtmlElementService', () => {
             expect(result).toBe(false);
         });
 
-        it('returns true when element src does matches regex', () => {
+        it('returns true when element src does match regex', () => {
             const element = document.createElement('img');
             element.setAttribute('src', 'https://app.cspconsole.com/logo.png');
             const result = isSrcElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isCspDataSrcElementMatchingDirectiveValueRegex', () => {
+        it('returns false when element does not have data-csp-attr src', () => {
+            const element = document.createElement('img');
+            element.setAttribute('src', 'https://app.cspconsole.com/logo.png');
+            const result = isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element has data-csp-src is empty', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', '');
+            const result = isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element has data-csp-attr src but value does not match regex', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://placehold.co/600x400.png');
+            const result = isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element has data-csp-attr src and value matches regex', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'src');
+            element.setAttribute('data-csp-src', 'https://app.cspconsole.com/logo.png');
+            const result = isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isHrefElementMatchingDirectiveValueRegex', () => {
+        it('returns false when element does not have href', () => {
+            const element = document.createElement('link');
+            element.setAttribute('nonce', 'XYZ');
+            const result = isHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element href does not match regex', () => {
+            const element = document.createElement('link');
+            element.setAttribute('href', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.css');
+            const result = isHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element href does match regex', () => {
+            const element = document.createElement('link');
+            element.setAttribute('href', 'https://app.cspconsole.com/style.css');
+            const result = isHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('isCspDataHrefElementMatchingDirectiveValueRegex', () => {
+        it('returns false when element does not have data-csp-attr href', () => {
+            const element = document.createElement('link');
+            element.setAttribute('href', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.css');
+            const result = isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element has data-csp-attr href is empty', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'href');
+            element.setAttribute('data-csp-src', '');
+            const result = isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns false when element has data-csp-attr href but value does not match regex', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'href');
+            element.setAttribute('data-csp-src', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.css');
+            const result = isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
+
+            expect(result).toBe(false);
+        });
+
+        it('returns true when element has data-csp-attr href and value matches regex', () => {
+            const element = document.createElement('img');
+            element.setAttribute('data-csp-attr', 'href');
+            element.setAttribute('data-csp-src', 'https://app.cspconsole.com/style.css');
+            const result = isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: 'https://[^.]+.cspconsole.com' });
 
             expect(result).toBe(true);
         });
