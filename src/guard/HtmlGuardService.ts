@@ -150,8 +150,8 @@ function guardHtmlElement(element: Element, value: string): void {
         }
     }
 
-    if (isElementScriptOrStyle(element)) {
-        if (isUnsafeInline(value)) {
+    if (isElementScriptOrStyle(element) && isUnsafeInline(value)) {
+        if (!isElementDataCspElem(element)) {
             blockUnsafeInline(element);
             return;
         } else {
@@ -176,4 +176,6 @@ export function htmlGuard({ html = document, allowedDirectives }: {html: Documen
             }
         }
     });
+
+    console.log(html.documentElement.outerHTML);
 }
