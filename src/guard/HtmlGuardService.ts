@@ -39,7 +39,7 @@ function blockSrcElement(element: Element): void {
 }
 
 function unlockSrcElement(element: Element): void {
-    if (!isElementDataCspSrc) {
+    if (!isElementDataCspSrc(element)) {
         return;
     }
 
