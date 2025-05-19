@@ -266,4 +266,100 @@ describe('HtmlGuardService', () => {
             expect(imgExternal.getAttribute("data-csp-src")).toBe("https://external.com/pic3.png");
         });
     });
+
+    it("should handle wildcard (*) directive correctly", () => {
+        const CSP_HEADER = "img-src *;";
+        const htmlContent = `
+          <html>
+            <body>
+              <img id="img-any-domain" src="https://anything.com/image.png" />
+              <img id="img-relative" src="/assets/img.png" />
+            </body>
+          </html>
+        `;
+
+        const dom = new JSDOM(htmlContent);
+        const { document } = dom.window;
+
+        htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+        const imgAny = document.getElementById("img-any-domain")!;
+        const imgRelative = document.getElementById("img-relative")!;
+
+        expect(imgAny.getAttribute("src")).toBe("https://anything.com/image.png");
+        expect(imgRelative.getAttribute("src")).toBe("/assets/img.png");
+    });
+
+    it("should block all external resources when only 'self' is allowed", () => {
+        const CSP_HEADER = "script-src 'self';";
+        const htmlContent = `
+          <html>
+            <body>
+              <script id="script-self" src="/main.js"></script>
+              <script id="script-external" src="https://cdn.extern.com/lib.js"></script>
+            </body>
+          </html>
+        `;
+
+        const dom = new JSDOM(htmlContent);
+        const { document } = dom.window;
+
+        htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+        const scriptSelf = document.getElementById("script-self")!;
+        const scriptExternal = document.getElementById("script-external")!;
+
+        expect(scriptSelf.getAttribute("src")).toBe("/main.js");
+        expect(scriptExternal.hasAttribute("src")).toBe(false);
+        expect(scriptExternal.getAttribute("data-csp-src")).toBe("https://cdn.extern.com/lib.js");
+    });
+
+    it("should handle mixed inline and external scripts with and without nonce", () => {
+        const CSP_HEADER = "script-src 'self' 'nonce-12345';";
+        const htmlContent = `
+          <html>
+            <body>
+              <script id="script-inline-no-nonce">alert('x');</script>
+              <script id="script-inline-nonce" nonce="12345">alert('y');</script>
+              <script id="script-external" src="https://cdn.extern.com/lib.js"></script>
+            </body>
+          </html>
+        `;
+
+        const dom = new JSDOM(htmlContent);
+        const { document } = dom.window;
+
+        htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+        const inlineNoNonce = document.getElementById("script-inline-no-nonce")!;
+        const inlineNonce = document.getElementById("script-inline-nonce")!;
+        const external = document.getElementById("script-external")!;
+
+        expect(inlineNoNonce.getAttribute("data-csp-result")).toBe("disabled");
+        expect(inlineNonce.innerHTML).toContain("alert('y');");
+        expect(external.hasAttribute("src")).toBe(false);
+    });
+
+    it("should respect multiple allowed sources in CSP", () => {
+        const CSP_HEADER = "script-src 'self' https://trusted.com;";
+        const htmlContent = `
+          <html>
+            <body>
+              <script id="script-self" src="/js/app.js"></script>
+              <script id="script-trusted" src="https://trusted.com/script.js"></script>
+              <script id="script-untrusted" src="https://evil.com/script.js"></script>
+            </body>
+          </html>
+        `;
+
+        const dom = new JSDOM(htmlContent);
+        const { document } = dom.window;
+
+        htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+        expect(document.getElementById("script-self")!.getAttribute("src")).toBe("/js/app.js");
+        expect(document.getElementById("script-trusted")!.getAttribute("src")).toBe("https://trusted.com/script.js");
+        expect(document.getElementById("script-untrusted")!.hasAttribute("src")).toBe(false);
+        expect(document.getElementById("script-untrusted")!.getAttribute("data-csp-src")).toBe("https://evil.com/script.js");
+    });
 });
