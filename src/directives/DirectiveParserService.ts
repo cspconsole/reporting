@@ -23,8 +23,7 @@ export function getPoliciesByDirective(cspHeader: string, directive: string): st
 
 export function getAllCspDirectivesByType({ cspHeader, type, selfReplacementUrl }: {cspHeader: string; type: string; selfReplacementUrl?: string;}): string[] {
     const selfReplacements = [
-        selfReplacementUrl ?? location.protocol + '//' + location.host,
-        '/'
+        selfReplacementUrl ?? location.origin
     ];
 
     if (cspHeader.indexOf(type) < 0) {

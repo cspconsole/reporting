@@ -2,7 +2,7 @@ import {
     hasElementHref,
     hasElementSrc, isCspDataHrefElementMatchingDirectiveValueRegex,
     isCspDataSrcElementMatchingDirectiveValueRegex,
-    isElementDataCspElem,
+    isElementDataCspResult,
     isElementDataCspHref,
     isElementDataCspSrc,
     isElementScriptOrStyle,
@@ -134,7 +134,7 @@ describe('HtmlElementService', () => {
             element.setAttribute('data-csp-attr', 'src');
             element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
 
-            const result = isElementDataCspElem(element);
+            const result = isElementDataCspResult(element);
 
             expect(result).toBe(false);
         });
@@ -145,7 +145,7 @@ describe('HtmlElementService', () => {
             element.setAttribute('data-csp-attr', 'src');
             element.setAttribute('data-csp-src', 'https://cspconsole.com/hello.png');
 
-            const result = isElementDataCspElem(element);
+            const result = isElementDataCspResult(element);
 
             expect(result).toBe(true);
         });

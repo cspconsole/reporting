@@ -23,7 +23,6 @@ describe('DirectiveParserService', () => {
 
             expect(result).toStrictEqual([
                 'https://cspconsole.com',
-                '/',
                 'unsafe-inline',
                 'https://apis.google.com',
                 'https://cdn.cspconsole.com',

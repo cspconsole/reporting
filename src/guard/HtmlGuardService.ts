@@ -4,7 +4,7 @@ import {
     hasElementSrc,
     isCspDataHrefElementMatchingDirectiveValueRegex,
     isCspDataSrcElementMatchingDirectiveValueRegex,
-    isElementDataCspElem,
+    isElementDataCspResult,
     isElementDataCspHref,
     isElementDataCspSrc,
     isElementScriptOrStyle,
@@ -82,28 +82,37 @@ function removeDataCspAttributes(element: Element): void {
 }
 
 function blockUnsafeInline(element: Element): void {
-    if (isElementDataCspElem(element)) {
+    if (isElementDataCspResult(element)) {
         return;
     }
 
-    element.setAttribute('data-csp-elem', 'disabled');
+    element.setAttribute('data-csp-result', 'disabled');
     element.innerHTML = '/*' + element.innerHTML + '*/';
 }
 
 function unlockUnsafeInline(element: Element): void {
-    if (!isElementDataCspElem(element)) {
+    if (!isElementDataCspResult(element)) {
         return;
     }
 
-    element.removeAttribute('data-csp-elem');
+    element.removeAttribute('data-csp-result');
     element.innerHTML = element.innerHTML.trim().replace(/^\/\*/, '').replace(/\*\/$/, '');
 }
 
-function guardHtmlElement(element: Element, value: string): void {
+function guardHtmlElement(element: Element, values: string[]): void {
     if (isElementWithNonceAndSrc(element)) {
-        if (isNonceMatchingDirectiveValue({ element, directiveValue: value })) {
-            unlockSrcElement(element);
-            return;
+        let isMatchingNonce = false;
+        values.forEach((value) => {
+            if (isNonceMatchingDirectiveValue({ element, directiveValue: value })) {
+                isMatchingNonce = true;
+            }
+        });
+
+        if (isMatchingNonce) {
+            if (isElementDataCspResult(element)) {
+                unlockSrcElement(element);
+                return;
+            }
         } else {
             blockSrcElement(element);
             return;
@@ -111,9 +120,18 @@ function guardHtmlElement(element: Element, value: string): void {
     }
 
     if (hasElementSrc(element)) {
-        if (isSrcElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            unlockSrcElement(element);
-            return;
+        let isMatchingSrc = false;
+        values.forEach((value) => {
+            if (isSrcElementMatchingDirectiveValueRegex({ element, regex: value })) {
+                isMatchingSrc = true;
+            }
+        });
+
+        if (isMatchingSrc) {
+            if (isElementDataCspResult(element)) {
+                unlockSrcElement(element);
+                return;
+            }
         } else {
             blockSrcElement(element);
             return;
@@ -121,19 +139,43 @@ function guardHtmlElement(element: Element, value: string): void {
     }
 
     if (isElementDataCspSrc(element)) {
-        if (isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: value })){
-            unlockSrcElement(element);
-            return;
+        let isMatchingDataSrc = false;
+
+        values.forEach((value) => {
+            if (isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex: value })) {
+                isMatchingDataSrc = true;
+            }
+        });
+
+        if (isMatchingDataSrc){
+            if (isElementDataCspResult(element)) {
+                if(element.getAttribute('data-csp-src') === 'https://evil.com/image.jpg') {
+                    console.log('unlocking');
+                }
+                unlockSrcElement(element);
+                return;
+            }
         } else {
+            if(element.getAttribute('data-csp-src') === 'https://evil.com/image.jpg') {
+                console.log('locking');
+            }
             blockSrcElement(element);
             return;
         }
     }
 
     if (hasElementHref(element)) {
-        if (isHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            unlockHrefElement(element);
-            return;
+        let isMatchingHref = false;
+        values.forEach((value) => {
+            if (isHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
+                isMatchingHref = true;
+            }
+        });
+        if (isMatchingHref) {
+            if (isElementDataCspResult(element)) {
+                unlockHrefElement(element);
+                return;
+            }
         } else {
             blockHrefElement(element);
             return;
@@ -141,17 +183,25 @@ function guardHtmlElement(element: Element, value: string): void {
     }
 
     if (isElementDataCspHref(element)) {
-        if (isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
-            unlockHrefElement(element);
-            return;
+        let isMatchingDataHref = false;
+        values.forEach((value) => {
+            if (isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex: value })) {
+                isMatchingDataHref = true;
+            }
+        });
+        if (isMatchingDataHref) {
+            if (isElementDataCspResult(element)) {
+             unlockHrefElement(element);
+             return;
+            }
         } else {
             blockHrefElement(element);
             return;
         }
     }
 
-    if (isElementScriptOrStyle(element) && isUnsafeInline(value)) {
-        if (!isElementDataCspElem(element)) {
+    if (isElementScriptOrStyle(element) && values.some((value) =>isUnsafeInline(value))) {
+        if (!isElementDataCspResult(element)) {
             blockUnsafeInline(element);
             return;
         } else {
@@ -171,11 +221,7 @@ export function htmlGuard({ html = document, allowedDirectives }: {html: Documen
         const values = getAllCspDirectivesByType({ cspHeader: allowedDirectives, type: directive });
 
         for (const element of htmlElements) {
-            for (const value of values) {
-                guardHtmlElement(element, value);
-            }
-        }
+            guardHtmlElement(element, values);
+       }
     });
-
-    console.log(html.documentElement.outerHTML);
 }

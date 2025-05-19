@@ -24,8 +24,8 @@ export function isElementDataCspHref<T extends Element>( element: T): element is
     return element.getAttribute('data-csp-attr') === 'href';
 }
 
-export function isElementDataCspElem<T extends Element>( element: T): element is T & { 'data-csp-elem': string } {
-    return !!element.getAttribute('data-csp-elem');
+export function isElementDataCspResult<T extends Element>(element: T): element is T & { 'data-csp-elem': string } {
+    return !!element.getAttribute('data-csp-result');
 }
 
 export function isElementScriptOrStyle(element: Element): element is HTMLScriptElement | HTMLStyleElement {
@@ -33,7 +33,33 @@ export function isElementScriptOrStyle(element: Element): element is HTMLScriptE
 }
 
 export function isNonceMatchingDirectiveValue({ element, directiveValue }: {element: Element; directiveValue: string}): boolean {
-    return element.getAttribute('nonce') === directiveValue;
+    return element.getAttribute('nonce') === directiveValue.replace('nonce-', '');
+}
+
+function isElementAttrMatchingDirectiveRegex({
+    element,
+    attrName,
+    regex,
+}: {
+    element: Element;
+    attrName: string;
+    regex: string;
+}): boolean {
+    if (regex === '*') {
+        return true;
+    }
+
+    try {
+        const rawAttr = element.getAttribute(attrName);
+        if (!rawAttr) {
+            return false;
+        }
+
+        const resolvedUrl = new URL(rawAttr, document.baseURI).href;
+        return new RegExp(regex).test(resolvedUrl);
+    } catch {
+        return false;
+    }
 }
 
 export function isSrcElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
@@ -41,7 +67,7 @@ export function isSrcElementMatchingDirectiveValueRegex({ element, regex }:{elem
         return false;
     }
 
-    return new RegExp(regex).test(element.src);
+    return isElementAttrMatchingDirectiveRegex({ element, attrName: 'src', regex });
 }
 
 export function isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
@@ -55,7 +81,7 @@ export function isCspDataSrcElementMatchingDirectiveValueRegex({ element, regex 
         return false;
     }
 
-    return new RegExp(regex).test(attribute);
+    return isElementAttrMatchingDirectiveRegex({ element, attrName: 'data-csp-src', regex });
 }
 
 export function isHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
@@ -63,7 +89,7 @@ export function isHrefElementMatchingDirectiveValueRegex({ element, regex }:{ele
         return false;
     }
 
-    return new RegExp(regex).test(element.href);
+    return isElementAttrMatchingDirectiveRegex({ element, attrName: 'href', regex });
 }
 
 export function isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex }:{element: Element; regex: string}) : boolean {
@@ -77,5 +103,5 @@ export function isCspDataHrefElementMatchingDirectiveValueRegex({ element, regex
         return false;
     }
 
-    return new RegExp(regex).test(attribute);
+    return isElementAttrMatchingDirectiveRegex({ element, attrName: 'data-csp-href', regex });
 }
