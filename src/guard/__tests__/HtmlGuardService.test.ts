@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 describe('HtmlGuardService', () => {
     describe('htmlGuard', () => {
         it("should correctly block or allow elements based on CSP config", () => {
-            const CSP_HEADER = "default-src 'self'; child-src 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'self'; frame-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.cspconsole.com 'nonce-abc123'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;";
+            const CSP_HEADER = "default-src 'self'; child-src 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'self'; frame-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self'; script-src 'self' https://cdn.cspconsole.com 'nonce-abc123'; style-src 'self' https://fonts.googleapis.com;";
 
             const htmlContent = `
               <html>
@@ -54,7 +54,7 @@ describe('HtmlGuardService', () => {
 
             // --- Style inline should remain with innerHTML wrapped in comment ---
             const styleInline = document.getElementById("style-inline")!;
-
+            console.log(styleInline.outerHTML);
             expect(styleInline.getAttribute("data-csp-result")).toBe("disabled");
             expect(styleInline.innerHTML.trim()).toMatch(/^\/\*.*\*\/$/);
 
@@ -123,6 +123,147 @@ describe('HtmlGuardService', () => {
             // Inline script should now be unwrapped
             expect(scriptInline.getAttribute("data-csp-result")).toBe(null);
             expect(scriptInline.innerHTML).toContain("console.log");
+        });
+
+        it("should allow wildcard '*' in directives (e.g. img-src *)", () => {
+            const CSP_HEADER = "img-src *; script-src 'self';";
+
+            const htmlContent = `
+                <html><body>
+                  <img id="img-allowed" src="https://anydomain.com/pic.png" />
+                  <script id="script-blocked" src="https://notallowed.com/app.js"></script>
+                </body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent);
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+            const imgAllowed = document.getElementById("img-allowed")!;
+            expect(imgAllowed.getAttribute("src")).toBe("https://anydomain.com/pic.png");
+            expect(imgAllowed.hasAttribute("data-csp-src")).toBe(false);
+
+            const scriptBlocked = document.getElementById("script-blocked")!;
+            expect(scriptBlocked.hasAttribute("src")).toBe(false);
+            expect(scriptBlocked.getAttribute("data-csp-src")).toBe("https://notallowed.com/app.js");
+        });
+
+        it("should block all when directive is missing for element type", () => {
+            const CSP_HEADER = "script-src 'self';"; // no img-src directive at all
+
+            const htmlContent = `
+                <html><body>
+                  <img id="img-blocked" src="https://someimage.com/img.png" />
+                  <script id="script-allowed" src="https://yourdomain.com/app.js"></script>
+                </body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent);
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER, selfReplacementUrl: 'https://yourdomain.com' });
+
+            const imgBlocked = document.getElementById("img-blocked")!;
+            expect(imgBlocked.hasAttribute("src")).toBe(false);
+            expect(imgBlocked.getAttribute("data-csp-src")).toBe("https://someimage.com/img.png");
+
+            const scriptAllowed = document.getElementById("script-allowed")!;
+            console.log(scriptAllowed.outerHTML);
+            expect(scriptAllowed.getAttribute("src")).toBe("https://yourdomain.com/app.js");
+        });
+
+        it("should correctly handle multiple allowed domains in directive", () => {
+            const CSP_HEADER = "script-src https://cdn1.com https://cdn2.com;";
+
+            const htmlContent = `
+                <html><body>
+                  <script id="script-cdn1" src="https://cdn1.com/lib.js"></script>
+                  <script id="script-cdn2" src="https://cdn2.com/lib.js"></script>
+                  <script id="script-other" src="https://other.com/lib.js"></script>
+                </body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent);
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+            expect(document.getElementById("script-cdn1")!.getAttribute("src")).toBe("https://cdn1.com/lib.js");
+            expect(document.getElementById("script-cdn2")!.getAttribute("src")).toBe("https://cdn2.com/lib.js");
+
+            const scriptOther = document.getElementById("script-other")!;
+            expect(scriptOther.hasAttribute("src")).toBe(false);
+            expect(scriptOther.getAttribute("data-csp-src")).toBe("https://other.com/lib.js");
+        });
+
+        it("should block inline scripts if 'unsafe-inline' is missing from script-src", () => {
+            const CSP_HEADER = "script-src https://cdn.cspconsole.com;";
+
+            const htmlContent = `
+                <html><body>
+                  <script id="script-inline">console.log('inline');</script>
+                  <script id="script-src" src="https://cdn.cspconsole.com/app.js"></script>
+                </body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent);
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+            const scriptInline = document.getElementById("script-inline")!;
+            expect(scriptInline.getAttribute("data-csp-result")).toBe("disabled");
+            expect(scriptInline.innerHTML.trim()).toMatch(/^\/\*.*\*\/$/);
+
+            const scriptSrc = document.getElementById("script-src")!;
+            expect(scriptSrc.getAttribute("src")).toBe("https://cdn.cspconsole.com/app.js");
+        });
+
+        it("should allow inline styles if 'unsafe-inline' is present in style-src", () => {
+            const CSP_HEADER = "style-src 'unsafe-inline';";
+
+            const htmlContent = `
+                <html><head>
+                  <style id="style-inline">body { color: red; }</style>
+                </head><body></body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent);
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+            const styleInline = document.getElementById("style-inline")!;
+            expect(styleInline.getAttribute("data-csp-result")).toBe(null);
+            expect(styleInline.innerHTML.trim()).toBe("body { color: red; }");
+        });
+
+        it("should handle relative URLs in src/href correctly against 'self'", () => {
+            const CSP_HEADER = "img-src 'self';";
+
+            const htmlContent = `
+                <html><body>
+                  <img id="img-relative1" src="/images/pic1.png" />
+                  <img id="img-relative2" src="pic2.png" />
+                  <img id="img-external" src="https://external.com/pic3.png" />
+                </body></html>
+            `;
+
+            const dom = new JSDOM(htmlContent, { url: "https://example.com/" });
+            const { document } = dom.window;
+
+            htmlGuard({ html: document, allowedDirectives: CSP_HEADER });
+
+            const imgRel1 = document.getElementById("img-relative1")!;
+            expect(imgRel1.getAttribute("src")).toBe("/images/pic1.png");
+
+            const imgRel2 = document.getElementById("img-relative2")!;
+            expect(imgRel2.getAttribute("src")).toBe("pic2.png");
+
+            const imgExternal = document.getElementById("img-external")!;
+            expect(imgExternal.hasAttribute("src")).toBe(false);
+            expect(imgExternal.getAttribute("data-csp-src")).toBe("https://external.com/pic3.png");
         });
     });
 });

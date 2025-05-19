@@ -200,25 +200,36 @@ function guardHtmlElement(element: Element, values: string[]): void {
         }
     }
 
-    if (isElementScriptOrStyle(element) && values.some((value) =>isUnsafeInline(value))) {
-        if (!isElementDataCspResult(element)) {
-            blockUnsafeInline(element);
+    if (isElementScriptOrStyle(element)) {
+        if (hasElementSrc(element) || hasElementHref(element)) {
             return;
-        } else {
+        }
+
+        const isUnsafeInlineAllowed = values.some((value) => isUnsafeInline(value));
+
+        if (isUnsafeInlineAllowed) {
+            console.log('unlock', element.outerHTML);
             unlockUnsafeInline(element);
             return;
         }
+
+        console.log('lock', element.outerHTML);
+        blockUnsafeInline(element);
     }
 }
 
-export function htmlGuard({ html = document, allowedDirectives }: {html: Document, allowedDirectives: string | undefined;}): void {
+export function htmlGuard({ html = document, allowedDirectives, selfReplacementUrl }: {
+    html: Document;
+    allowedDirectives: string | undefined;
+    selfReplacementUrl?: string
+}): void {
     if (!allowedDirectives) {
         return;
     }
 
     Object.entries(HTML_ELEMENTS).forEach(([htmlTagName, directive]) => {
         const htmlElements = html.querySelectorAll(htmlTagName);
-        const values = getAllCspDirectivesByType({ cspHeader: allowedDirectives, type: directive });
+        const values = getAllCspDirectivesByType({ cspHeader: allowedDirectives, type: directive, selfReplacementUrl });
 
         for (const element of htmlElements) {
             guardHtmlElement(element, values);
