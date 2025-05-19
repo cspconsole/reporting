@@ -149,16 +149,10 @@ function guardHtmlElement(element: Element, values: string[]): void {
 
         if (isMatchingDataSrc){
             if (isElementDataCspResult(element)) {
-                if(element.getAttribute('data-csp-src') === 'https://evil.com/image.jpg') {
-                    console.log('unlocking');
-                }
                 unlockSrcElement(element);
                 return;
             }
         } else {
-            if(element.getAttribute('data-csp-src') === 'https://evil.com/image.jpg') {
-                console.log('locking');
-            }
             blockSrcElement(element);
             return;
         }
@@ -208,12 +202,10 @@ function guardHtmlElement(element: Element, values: string[]): void {
         const isUnsafeInlineAllowed = values.some((value) => isUnsafeInline(value));
 
         if (isUnsafeInlineAllowed) {
-            console.log('unlock', element.outerHTML);
             unlockUnsafeInline(element);
             return;
         }
 
-        console.log('lock', element.outerHTML);
         blockUnsafeInline(element);
     }
 }
