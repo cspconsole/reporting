@@ -1,5 +1,5 @@
 {
-  "name": "cspconsole-reporting",
+  "name": "@cspconsole/reporting",
   "version": "0.0.2",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
   "type": "module",
