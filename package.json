@@ -1,6 +1,6 @@
 {
   "name": "@cspconsole.com/reporting",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
   "type": "module",
   "main": "dist/index.umd.js",
