@@ -1,0 +1,39 @@
+# Node.js dependencies
+/node_modules/
+
+# TypeScript build output
+#/dist/
+/build/
+/*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE files (PhpStorm, VSCode, etc.)
+.idea/
+/.vscode/
+
+# TypeScript declaration files (if generated manually)
+#*.d.ts
+
+# Miscellaneous
+/.eslintcache
+/.parcel-cache
+
+# Jest test coverage
+/coverage/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Output of the build (if applicable)
+*.tgz
+
+# Vite or other bundler output (if used)
+vite/

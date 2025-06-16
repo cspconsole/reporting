@@ -1,0 +1,48 @@
+{
+  "name": "cspconsole-reporting",
+  "version": "0.0.1",
+  "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
+  "type": "module",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/indexEsm.d.ts",
+  "umdTypes": "dist/types/indexUmd.d.ts",
+  "scripts": {
+    "build": "npx rollup -c && npx tsc --declaration --emitDeclarationOnly",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "author": "cspconsole.com",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/parser": "^7.26.5",
+    "@babel/preset-env": "^7.26.7",
+    "@babel/types": "^7.26.5",
+    "@types/crypto-js": "^4.2.2",
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^9.19.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^26.0.0",
+    "rollup": "^4.39.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3",
+    "util": "^0.12.5"
+  },
+  "extensionsToTreatAsEsm": [
+    ".ts",
+    ".tsx",
+    ".js"
+  ],
+  "dependencies": {
+    "crypto-js": "^4.2.0"
+  },
+  "postinstall": "cp ./dist/service-worker.js ./public/service-worker.js"
+}
