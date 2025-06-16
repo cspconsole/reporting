@@ -2,6 +2,11 @@
   "name": "@cspconsole.com/reporting",
   "version": "0.0.4",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cspconsole/reporting.git"
+  },
+  "homepage": "https://cspconsole.com",
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
