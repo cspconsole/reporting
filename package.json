@@ -1,6 +1,6 @@
 {
   "name": "@cspconsole.com/reporting",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "cspconsole.com package for handling CSP directives in JS single page applications ",
   "repository": {
     "type": "git",
